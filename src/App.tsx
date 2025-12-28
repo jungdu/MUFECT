@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useAudioStore } from './stores/audioStore';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { Timeline } from './components/Timeline/Timeline';
@@ -15,10 +15,11 @@ function App() {
       {/* Header */}
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface/50 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center font-bold text-white">
-            AV
-          </div>
-          <h1 className="font-bold text-lg tracking-tight">Audio Visualizer <span className="text-secondary font-normal">Video Generator</span></h1>
+          <img src="/logo.svg" alt="MUFECT" className="w-8 h-8 rounded-lg" />
+          <h1 className="font-bold text-lg tracking-tight">
+            <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-green-500 text-transparent bg-clip-text">MUFECT</span>
+            <span className="text-secondary font-normal ml-1">Video Generator</span>
+          </h1>
         </div>
         <div className="flex items-center gap-4">
           <ExportButton />

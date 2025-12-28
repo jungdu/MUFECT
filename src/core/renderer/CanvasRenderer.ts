@@ -34,7 +34,7 @@ export class CanvasRenderer {
             // Fetch new data only if playing (shouldUpdateData)
             if (shouldUpdateData) {
                 analyser.smoothingTimeConstant = options.smoothing || 0.8;
-                analyser.getByteFrequencyData(this.dataArray);
+                analyser.getByteFrequencyData(this.dataArray as any);
             }
 
             visualizer.draw({

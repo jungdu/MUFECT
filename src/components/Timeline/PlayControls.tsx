@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAudioStore } from '../../stores/audioStore';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
-import { cn } from '../../utils/cn';
+
 
 export const PlayControls: React.FC = () => {
     const { isPlaying, setIsPlaying, currentTime, duration, file } = useAudioStore();

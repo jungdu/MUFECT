@@ -1,7 +1,7 @@
 export class AudioAnalyzer {
     private audioContext: AudioContext | null = null;
     private analyser: AnalyserNode | null = null;
-    private source: AudioBufferSourceNode | null = null;
+
     private gainNode: GainNode | null = null;
 
     // Buffers

@@ -6,7 +6,7 @@ export class BarVisualizer implements IVisualizer {
             color,
             scale, positionX, positionY,
             barCount, barWidth, barGap,
-            sensitivity, smoothing,
+            sensitivity,
             minFrequency, maxFrequency,
             minAmplitude, maxAmplitude
         } = options;

@@ -1,11 +1,11 @@
 import type { IVisualizer, DrawContext } from './types';
 
 export class CircleVisualizer implements IVisualizer {
-    draw({ ctx, width, height, analyser, dataArray, options }: DrawContext) {
+    draw({ ctx, width, height, dataArray, options }: DrawContext) {
         const {
             color,
             scale, positionX, positionY,
-            sensitivity, smoothing
+            sensitivity
         } = options;
 
         // Data fetching is now handled by CanvasRenderer

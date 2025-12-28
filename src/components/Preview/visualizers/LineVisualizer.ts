@@ -1,11 +1,11 @@
 import type { IVisualizer, DrawContext } from './types';
 
 export class LineVisualizer implements IVisualizer {
-    draw({ ctx, width, height, analyser, dataArray, options }: DrawContext) {
+    draw({ ctx, width, height, dataArray, options }: DrawContext) {
         const {
             color,
             scale, positionX, positionY,
-            sensitivity, smoothing
+            sensitivity
         } = options;
 
         // Data fetching is now handled by CanvasRenderer
@@ -24,7 +24,7 @@ export class LineVisualizer implements IVisualizer {
         ctx.translate(centerX, centerY);
         ctx.scale(scale, scale);
 
-        const sliceWidth = width / dataArray.length * 2; // Spread it out
+
         // Actually let's just center a fixed width line
         const drawingWidth = 600;
         const startX = -drawingWidth / 2;
