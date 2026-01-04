@@ -12,7 +12,13 @@ import { Sidebar } from './components/Layout/Sidebar';
 function App() {
   const file = useAudioStore((state) => state.file);
   const selectedTrackId = useVisualizerStore((state) => state.selectedTrackId);
+  const selectTrack = useVisualizerStore((state) => state.selectTrack);
   const [activeTab, setActiveTab] = useState('audio-effect');
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    selectTrack(null);
+  };
 
   // Dynamic Left Panel Content
   let LeftPanel: React.FC = () => null;
@@ -36,7 +42,7 @@ function App() {
   return (
     <div className="h-screen bg-background text-white flex font-sans overflow-hidden">
       {/* Left Navigation Rail */}
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Dynamic Side Panel (Effect Selector or Properties) */}
       <div className="w-[320px] h-full border-r border-white/5 bg-surface/30 backdrop-blur-sm flex flex-col">
