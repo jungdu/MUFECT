@@ -11,12 +11,13 @@ export interface VisualizerProperties {
     // Actually, usually BG is global. Let's keep BG in the store root or assume it's black. 
     // The previous store had backgroundColor. I will keep it in the store but maybe not per track.
 
-    scale: number;
+
     positionX: number;
     positionY: number;
+    width: number;
+    height: number;
 
     barCount: number;
-    barWidth: number;
     barGap: number;
 
     sensitivity: number;
@@ -26,6 +27,8 @@ export interface VisualizerProperties {
     maxFrequency: number;
     minAmplitude: number;
     maxAmplitude: number;
+
+    centerRadius: number;
 
     mirrored: boolean;
 }
@@ -37,13 +40,14 @@ export const DEFAULT_PROPERTIES: VisualizerProperties = {
     gradientEndColor: '#8b5cf6',
     backgroundColor: '#000000',
 
-    scale: 1.0,
     positionX: 50,
     positionY: 50,
+    width: 40,
+    height: 40,
 
     barCount: 64,
-    barWidth: 6,
     barGap: 2,
+    centerRadius: 0.5,
 
     sensitivity: 0.8,
     smoothing: 0.8,

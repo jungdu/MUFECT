@@ -33,7 +33,7 @@ export const SliderControl: React.FC<SliderControlProps> = ({
                         </button>
                     )}
                 </div>
-                <span>{value}{unit}</span>
+                <span>{Number(value).toFixed(1)}{unit}</span>
             </div>
 
             <Slider.Root

@@ -4,8 +4,8 @@ export class BarVisualizer implements IVisualizer {
     draw({ ctx, width, height, analyser, dataArray, options }: DrawContext) {
         const {
             color,
-            scale, positionX, positionY,
-            barCount, barWidth, barGap,
+
+            barCount, barGap,
             sensitivity,
             minFrequency, maxFrequency,
             minAmplitude, maxAmplitude
@@ -13,8 +13,8 @@ export class BarVisualizer implements IVisualizer {
 
         // Data fetching is now handled by CanvasRenderer
 
-        const centerX = width * (positionX / 100);
-        const centerY = height * (positionY / 100);
+        // Context is already translated to the center of the bounding box by CanvasRenderer.
+        // width and height are the bounding box dimensions.
 
         // Calculate frequency range indices
         const sampleRate = analyser.context.sampleRate;
@@ -35,12 +35,27 @@ export class BarVisualizer implements IVisualizer {
         const step = Math.max(1, totalBins / barCount);
 
         ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.scale(scale, scale);
 
-        // We want to center the bars
-        const totalWidth = barCount * (barWidth + barGap) - barGap;
-        ctx.translate(-totalWidth / 2, 0);
+
+        // Calculate Calculate bar width based on total width and count
+        const totalGap = Math.max(0, (barCount - 1) * barGap);
+        // Ensure barWidth is at least 1px or handle gracefully
+        const availableWidth = width - totalGap;
+        const barWidth = Math.max(0, availableWidth / barCount);
+
+        // We want to center the bars? 
+        // Logic: (0,0) is currently center of bbox (from Renderer setup).
+        // bbox width = width.
+        // We want bars to span from -width/2 to width/2.
+
+        // Start X should be left edge of content.
+        // Total Actual content width = (barWidth * barCount) + totalGap.
+        // Which is roughly 'width' (allowing for float precision).
+
+        const totalContentWidth = (barWidth * barCount) + totalGap;
+
+        // Translate to left edge
+        ctx.translate(-totalContentWidth / 2, 0);
 
         ctx.fillStyle = color;
 
@@ -60,16 +75,23 @@ export class BarVisualizer implements IVisualizer {
             // Apply sensitivity on top of the normalized range? 
             // The sensitivity effectively acts as a volume booster for the final height
             const percent = normalized;
-            const h = Math.max(4, percent * 200 * sensitivity);
+            // Use height of the bounding box
+            // If mirrored, height is max total height. If not, height is max.
+            const maxH = options.mirrored ? height : height;
+            // Removed 0.5 factor to allow filling the area. Sensitivity controls the headroom.
+            const h = Math.max(4, percent * maxH * sensitivity);
 
             const x = i * (barWidth + barGap);
 
             if (options.mirrored) {
                 // "Voice Memo" style mirrored bars
+                // Center is 0.
                 ctx.fillRect(x, -h * 0.5, barWidth, h);
             } else {
-                // Unidirectional bars (growing upwards)
-                ctx.fillRect(x, -h, barWidth, h);
+                // Unidirectional bars (growing upwards from BOTTOM)
+                // Bottom of bounding box is height/2.
+                // We draw upwards, so y = (height/2) - h.
+                ctx.fillRect(x, (height / 2) - h, barWidth, h);
             }
         }
 

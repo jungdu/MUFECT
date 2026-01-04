@@ -1,43 +1,68 @@
-
+import { useState } from 'react';
 import { useAudioStore } from './stores/audioStore';
+import { useVisualizerStore } from './stores/visualizerStore';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { Timeline } from './components/Timeline/Timeline';
 import { PreviewCanvas } from './components/Preview/PreviewCanvas';
 import { EffectSelector } from './components/Editor/EffectSelector';
 import { PropertiesPanel } from './components/Editor/PropertiesPanel';
 import { ExportButton } from './components/Export/ExportButton';
+import { Sidebar } from './components/Layout/Sidebar';
 
 function App() {
   const file = useAudioStore((state) => state.file);
+  const selectedTrackId = useVisualizerStore((state) => state.selectedTrackId);
+  const [activeTab, setActiveTab] = useState('audio-effect');
+
+  // Dynamic Left Panel Content
+  let LeftPanel: React.FC = () => null;
+  let panelTitle = '';
+
+  if (activeTab === 'audio-effect') {
+    LeftPanel = selectedTrackId ? PropertiesPanel : EffectSelector;
+    panelTitle = selectedTrackId ? 'Effect Properties' : 'Add Effect';
+  } else {
+    // For unimplemented tabs, show empty state
+    LeftPanel = () => (
+      <div className="h-full flex flex-col items-center justify-center p-4 text-center">
+        <p className="text-secondary mb-2">Coming Soon</p>
+        <p className="text-xs text-secondary/50">This feature is not yet available.</p>
+      </div>
+    );
+    // Capitalize first letter for title
+    panelTitle = activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
+  }
 
   return (
-    <div className="min-h-screen bg-background text-white flex flex-col font-sans">
-      {/* Header */}
-      <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="MUFECT" className="w-8 h-8 rounded-lg" />
-          <h1 className="font-bold text-lg tracking-tight">
-            <span className="bg-gradient-to-r from-purple-500 via-blue-500 to-green-500 text-transparent bg-clip-text">MUFECT</span>
-            <span className="text-secondary font-normal ml-1">Video Generator</span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <ExportButton />
-        </div>
-      </header>
+    <div className="h-screen bg-background text-white flex font-sans overflow-hidden">
+      {/* Left Navigation Rail */}
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 grid grid-cols-12 gap-6 h-[calc(100vh-64px)] overflow-hidden">
-
-        {/* Left Sidebar - Effects */}
-        <div className="col-span-2 flex flex-col gap-6">
-          <EffectSelector />
-          {/* Could add presets here */}
+      {/* Dynamic Side Panel (Effect Selector or Properties) */}
+      <div className="w-[320px] h-full border-r border-white/5 bg-surface/30 backdrop-blur-sm flex flex-col">
+        <div className="h-10 flex items-center px-4 shrink-0">
+          <h2 className="font-semibold text-xs tracking-wide text-white/50 uppercase">
+            {panelTitle}
+          </h2>
         </div>
+        <div className="flex-1 overflow-hidden">
+          <LeftPanel />
+        </div>
+      </div>
 
-        {/* Center - Preview & Timeline */}
-        <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 h-full">
-          <div className="w-full aspect-square bg-black/50 rounded-xl overflow-hidden shadow-2xl border border-white/5 relative mx-auto">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        {/* Header */}
+        <header className="h-12 flex items-center justify-end px-6 shrink-0">
+          <div className="flex items-center gap-4">
+            <ExportButton />
+          </div>
+        </header>
+
+        {/* Workspace */}
+        <div className="flex-1 p-6 pt-2 flex flex-col gap-6 overflow-hidden">
+          {/* Preview Canvas Area */}
+          <div className="flex-1 min-h-0 bg-black/50 rounded-xl overflow-hidden shadow-2xl border border-white/5 relative flex flex-col">
             <PreviewCanvas />
 
             {/* Overlay Uploader if no file */}
@@ -48,17 +73,12 @@ function App() {
             )}
           </div>
 
+          {/* Timeline Area - Fixed height or resizable? Fixed for now to match previous */}
           <div className="h-auto shrink-0">
             <Timeline />
           </div>
         </div>
-
-        {/* Right Sidebar - Properties */}
-        <div className="col-span-3 h-full overflow-hidden">
-          <PropertiesPanel />
-        </div>
-
-      </main>
+      </div>
     </div>
   );
 }

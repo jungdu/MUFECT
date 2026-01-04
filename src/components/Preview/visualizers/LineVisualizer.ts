@@ -4,29 +4,14 @@ export class LineVisualizer implements IVisualizer {
     draw({ ctx, width, height, dataArray, options }: DrawContext) {
         const {
             color,
-            scale, positionX, positionY,
+            mirrored = false, // Check mirrored prop
             sensitivity
         } = options;
 
-        // Data fetching is now handled by CanvasRenderer
-
-        // Or we could use TimeDomainData for a true waveform line?
-        // User requirement says "Line Wave", let's do TimeDomain for "Wave" look
-        // or Frequency for "Spectrum" look. 
-        // Usually "Wave" implies TimeDomain, but let's stick to Frequency for consistency 
-        // unless specified. Wait, "Audio Visualizer" implies spectrums usually.
-        // Let's use Frequency but draw a line connecting tops.
-
-        const centerX = width * (positionX / 100);
-        const centerY = height * (positionY / 100);
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.scale(scale, scale);
-
+        // ...
 
         // Actually let's just center a fixed width line
-        const drawingWidth = 600;
+        const drawingWidth = width * 0.9; // Use 90% of box width
         const startX = -drawingWidth / 2;
 
         ctx.beginPath();
@@ -41,16 +26,31 @@ export class LineVisualizer implements IVisualizer {
         for (let i = 0; i < points; i++) {
             const value = dataArray[i * step] || 0;
             const percent = value / 255;
-            const y = -percent * 200 * sensitivity;
+
+            let y = 0;
+
+            if (mirrored) {
+                // Centered waveform
+                y = -percent * (height * 0.5) * sensitivity;
+                // Since it's usually 0-255 frequency data, it goes UP from center.
+                // If we want a true waveform we need time domain data, but assuming frequency:
+                // Maybe we want +/-? For now, keep previous behavior if mirrored (Center based)
+            } else {
+                // Bottom based (Standard)
+                // Bottom is height/2.
+                // Go up by value.
+                y = (height / 2) - (percent * height * sensitivity);
+            }
+            // Fallback to previous logic if not differentiating? 
+            // User asked "LineWave... reference point... below".
+            // So:
+            y = (height / 2) - (percent * height * sensitivity);
 
             const x = startX + i * pointWidth;
 
             if (i === 0) {
                 ctx.moveTo(x, y);
             } else {
-                // Smooth curve?
-                // ctx.quadraticCurveTo(...) 
-                // Simple line to
                 ctx.lineTo(x, y);
             }
         }

@@ -45,17 +45,38 @@ export class CanvasRenderer {
             }
 
             // 4. Draw each track
+            // 4. Draw each track
             tracks.forEach(track => {
                 const visualizer = getVisualizer(track.type);
                 if (visualizer) {
+                    const { positionX, positionY, width: wPerc, height: hPerc } = track.properties;
+
+                    // Convert % to pixels
+                    const w = width * (wPerc / 100);
+                    const h = height * (hPerc / 100);
+                    const x = (width * (positionX / 100)) - (w / 2);
+                    const y = (height * (positionY / 100)) - (h / 2);
+
+                    ctx.save();
+
+                    // Clip to bounding box
+                    ctx.beginPath();
+                    ctx.rect(x, y, w, h);
+                    ctx.clip();
+
+                    // Translate to CENTER of the bounding box
+                    ctx.translate(x + w / 2, y + h / 2);
+
                     visualizer.draw({
                         ctx,
-                        width,
-                        height,
+                        width: w,
+                        height: h,
                         analyser,
                         dataArray: this.dataArray,
                         options: track.properties
                     });
+
+                    ctx.restore();
                 }
             });
         }

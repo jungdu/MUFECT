@@ -104,8 +104,8 @@ export const EffectSelector: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 bg-surface rounded-lg border border-white/5 space-y-4">
-            <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">ADD EFFECT</h3>
+        <div className="p-4 space-y-4">
+
 
             <div className="flex flex-col gap-2">
                 {options.map((opt) => (
