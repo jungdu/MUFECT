@@ -9,7 +9,10 @@ export const Waveform: React.FC = () => {
     const timelineRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
     const { file, isPlaying, setIsPlaying, setDuration, setCurrentTime, setAudioData } = useAudioStore();
-    const { color } = useVisualizerStore();
+    const { tracks, selectedTrackId } = useVisualizerStore();
+
+    const selectedTrack = tracks.find(t => t.id === selectedTrackId);
+    const color = selectedTrack?.properties.color || '#3b82f6'; // Default to blue if no track selected
 
     useEffect(() => {
         if (!containerRef.current || !timelineRef.current || !file) return;
