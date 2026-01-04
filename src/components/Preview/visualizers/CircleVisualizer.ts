@@ -53,27 +53,11 @@ export class CircleVisualizer implements IVisualizer {
 
             // Bar Height
             // Should scale to fill available space based on percent and sensitivity
-            // If sensitivity is 1, max volume hits the bounding box edge.
             const barHeight = Math.max(2, percent * availableSpace * sensitivity);
 
             // Draw Bars
             // Position: Start from innerRadius and draw OUTWARDS
-            // Canvas Y is down. -y is up.
-            // We rotate context.
-            // Rect drawn at y = -innerRadius - barHeight?
-            // No, we want the BASE at innerRadius.
-            // Drawing a rect at -y means the bottom of rect is at y?
 
-            // Let's standardise:
-            // Rotate to angle.
-            // We want to draw a line/rect starting at radius R and going to R+L.
-            // In canvas, 'y' increases downwards. 'x' is right.
-            // If we rotate phi.
-            // Drawing at y = -innerRadius would be "Up" relative to rotation.
-            // To extend "Outwards" (Upwards in rotated frame): 
-            // Top of rect: -innerRadius - barHeight
-            // Height: barHeight
-            // Result: Rectangle spans from (-innerRadius - barHeight) to (-innerRadius).
 
             const angleOffset = i * angleStep;
 

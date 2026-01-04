@@ -37,20 +37,11 @@ export class BarVisualizer implements IVisualizer {
         ctx.save();
 
 
-        // Calculate Calculate bar width based on total width and count
+        // Calculate bar width based on total width and count
         const totalGap = Math.max(0, (barCount - 1) * barGap);
         // Ensure barWidth is at least 1px or handle gracefully
         const availableWidth = width - totalGap;
         const barWidth = Math.max(0, availableWidth / barCount);
-
-        // We want to center the bars? 
-        // Logic: (0,0) is currently center of bbox (from Renderer setup).
-        // bbox width = width.
-        // We want bars to span from -width/2 to width/2.
-
-        // Start X should be left edge of content.
-        // Total Actual content width = (barWidth * barCount) + totalGap.
-        // Which is roughly 'width' (allowing for float precision).
 
         const totalContentWidth = (barWidth * barCount) + totalGap;
 
