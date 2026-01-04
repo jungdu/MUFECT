@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PanelLeftClose } from 'lucide-react';
 import { useAudioStore } from './stores/audioStore';
 import { useVisualizerStore } from './stores/visualizerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -16,12 +17,14 @@ function App() {
   const selectedTrackId = useVisualizerStore((state) => state.selectedTrackId);
   const selectTrack = useVisualizerStore((state) => state.selectTrack);
   const [activeTab, setActiveTab] = useState('audio-effect');
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   useKeyboardShortcuts();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     selectTrack(null);
+    setIsPanelOpen(true);
   };
 
   // Dynamic Left Panel Content
@@ -49,16 +52,25 @@ function App() {
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Dynamic Side Panel (Effect Selector or Properties) */}
-      <div className="w-[320px] h-full border-r border-white/5 bg-surface/30 backdrop-blur-sm flex flex-col">
-        <div className="h-10 flex items-center px-4 shrink-0">
-          <h2 className="font-semibold text-xs tracking-wide text-white/50 uppercase">
-            {panelTitle}
-          </h2>
+      {isPanelOpen && (
+        <div className="w-[320px] h-full border-r border-white/5 bg-surface/30 backdrop-blur-sm flex flex-col transition-all duration-300">
+          <div className="h-10 flex items-center justify-between px-4 shrink-0">
+            <h2 className="font-semibold text-xs tracking-wide text-white/50 uppercase">
+              {panelTitle}
+            </h2>
+            <button
+              onClick={() => setIsPanelOpen(false)}
+              className="text-white/30 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
+              title="Close Panel"
+            >
+              <PanelLeftClose size={14} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <LeftPanel />
+          </div>
         </div>
-        <div className="flex-1 overflow-hidden">
-          <LeftPanel />
-        </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
