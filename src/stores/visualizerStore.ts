@@ -1,16 +1,13 @@
 import { create } from 'zustand';
 
-export type VisualizerType = 'bar' | 'circle' | 'line';
+export type VisualizerType = 'bar' | 'circle' | 'line' | 'image';
 
 export interface VisualizerProperties {
     color: string;
     gradientEnabled: boolean;
     gradientStartColor: string;
     gradientEndColor: string;
-    backgroundColor: string; // Global or per track? Assuming global for now per request "Black bg default", or maybe track specific? Let's keep bg global or per track. Let's make bg global for the canvas, but track props for the effect. Wait, user said "Basic value is just black background".
-    // Actually, usually BG is global. Let's keep BG in the store root or assume it's black. 
-    // The previous store had backgroundColor. I will keep it in the store but maybe not per track.
-
+    backgroundColor: string;
 
     positionX: number;
     positionY: number;
@@ -31,6 +28,11 @@ export interface VisualizerProperties {
     centerRadius: number;
 
     mirrored: boolean;
+
+    // Image Props
+    imageUrl?: string;
+    maintainAspectRatio?: boolean;
+    imageRatio?: number; // width / height
 }
 
 export const DEFAULT_PROPERTIES: VisualizerProperties = {
@@ -58,6 +60,9 @@ export const DEFAULT_PROPERTIES: VisualizerProperties = {
     maxAmplitude: 255,
 
     mirrored: true,
+
+    maintainAspectRatio: true,
+    imageRatio: 1,
 };
 
 export interface VisualizerTrackItem {
@@ -76,13 +81,12 @@ interface VisualizerState {
     setBackgroundColor: (color: string) => void;
 
     // Actions
-    addTrack: (type: VisualizerType, initialProps?: Partial<VisualizerProperties>) => void;
+    addTrack: (type: VisualizerType, initialProps?: Partial<VisualizerProperties>, name?: string) => void;
     removeTrack: (id: string) => void;
     selectTrack: (id: string | null) => void;
     updateTrackProperties: (id: string, props: Partial<VisualizerProperties>) => void;
+    reorderTrack: (id: string, direction: 'front' | 'back' | 'forward' | 'backward') => void;
     reset: () => void;
-
-    // Helper to get selected track (optional, or just use find in UI)
 }
 
 export const useVisualizerStore = create<VisualizerState>((set) => ({
@@ -92,12 +96,12 @@ export const useVisualizerStore = create<VisualizerState>((set) => ({
 
     setBackgroundColor: (color) => set({ backgroundColor: color }),
 
-    addTrack: (type, initialProps) => set((state) => {
+    addTrack: (type, initialProps, name) => set((state) => {
         const id = crypto.randomUUID();
         const newTrack: VisualizerTrackItem = {
             id,
             type,
-            name: `${type.charAt(0).toUpperCase() + type.slice(1)} Wave`,
+            name: name || (type === 'image' ? 'Image Layer' : `${type.charAt(0).toUpperCase() + type.slice(1)} Wave`),
             properties: {
                 ...DEFAULT_PROPERTIES,
                 backgroundColor: state.backgroundColor,
@@ -121,9 +125,39 @@ export const useVisualizerStore = create<VisualizerState>((set) => ({
         tracks: state.tracks.map(t => t.id === id ? { ...t, properties: { ...t.properties, ...props } } : t)
     })),
 
+    reorderTrack: (id, direction) => set((state) => {
+        const index = state.tracks.findIndex(t => t.id === id);
+        if (index === -1) return state;
+
+        const newTracks = [...state.tracks];
+        const track = newTracks[index];
+
+        // Improve: Handle edges properly
+        if (direction === 'front') {
+            newTracks.splice(index, 1);
+            newTracks.push(track);
+        } else if (direction === 'back') {
+            newTracks.splice(index, 1);
+            newTracks.unshift(track);
+        } else if (direction === 'forward') {
+            if (index < newTracks.length - 1) {
+                newTracks[index] = newTracks[index + 1];
+                newTracks[index + 1] = track;
+            }
+        } else if (direction === 'backward') {
+            if (index > 0) {
+                newTracks[index] = newTracks[index - 1];
+                newTracks[index - 1] = track;
+            }
+        }
+
+        return { tracks: newTracks };
+    }),
+
     reset: () => set({
         tracks: [],
         selectedTrackId: null,
         backgroundColor: '#000000',
     }),
 }));
+

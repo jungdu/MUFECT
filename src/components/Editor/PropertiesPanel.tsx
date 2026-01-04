@@ -2,7 +2,7 @@ import React from 'react';
 import { useVisualizerStore, DEFAULT_PROPERTIES } from '../../stores/visualizerStore';
 import { SliderControl } from './SliderControl';
 import { ColorPicker } from './ColorPicker';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowLeftRight, ArrowUpDown } from 'lucide-react';
 
 export const PropertiesPanel: React.FC = () => {
     const { tracks, selectedTrackId, updateTrackProperties, removeTrack } = useVisualizerStore();
@@ -24,35 +24,70 @@ export const PropertiesPanel: React.FC = () => {
 
     const handleChange = (key: keyof typeof props, value: any) => {
         const now = Date.now();
+        // Skip throttling for checkboxes or non-slider inputs if needed, but 300ms is fine for sliders.
+        // For checkbox "maintainAspectRatio", we want immediate update.
+        if (key === 'maintainAspectRatio') {
+            updateTrackProperties(selectedTrack.id, { [key]: value });
+            return;
+        }
+
         const lastUpdate = lastUpdateRef.current[key] || 0;
 
-        // We probably want to update immediately on the leading edge? 
-        // Or trailing? Usually sliders need to feel responsive locally (which SliderControl handles visually)
-        // but state updates can be throttled.
-        // However, SliderControl's internal state might be sync with props.
-        // If we block props update, the slider thumb might jump back.
-        // Ideally, SliderControl should handle its own local state while dragging.
-        // For this task, I will implement a basic throttle here.
-
-        if (now - lastUpdate < 300) return;
+        if (now - lastUpdate < 30) { // Reduced throttle for smoother slider linking
+            return;
+        }
 
         lastUpdateRef.current[key] = now;
-        updateTrackProperties(selectedTrack.id, { [key]: value });
+
+        const updates: Partial<typeof props> = { [key]: value };
+
+        // Aspect Ratio Logic
+        if (selectedTrack.type === 'image' && props.maintainAspectRatio && (key === 'width' || key === 'height')) {
+            const canvas = document.querySelector('canvas');
+            if (canvas && props.imageRatio) {
+                const cw = canvas.width;
+                const ch = canvas.height;
+                const canvasRatio = cw / ch;
+                const imgRatio = props.imageRatio;
+
+                // w_px / h_px = imgRatio
+                // (w% * cw) / (h% * ch) = imgRatio
+                // w% = h% * (ch/cw) * imgRatio = h% * (1/canvasRatio) * imgRatio
+                // h% = w% * (cw/ch) / imgRatio = w% * canvasRatio / imgRatio
+
+                if (key === 'width') {
+                    // Update Height
+                    // h = w * canvasRatio / imgRatio
+                    const newHeight = (value as number) * canvasRatio / imgRatio;
+                    updates.height = Math.round(newHeight * 100) / 100; // Round to 2 decimals
+                } else {
+                    // Update Width
+                    // w = h * (1/canvasRatio) * imgRatio
+                    const newWidth = (value as number) / canvasRatio * imgRatio;
+                    updates.width = Math.round(newWidth * 100) / 100;
+                }
+            }
+        }
+
+        updateTrackProperties(selectedTrack.id, updates);
     };
 
     return (
         <div className="p-4 space-y-6 h-full overflow-y-auto">
             {/* Appearance */}
-            <div className="space-y-4">
-                <ColorPicker
-                    label="Color"
-                    value={props.color}
-                    onChange={(v) => handleChange('color', v)}
-                    onReset={() => handleChange('color', DEFAULT_PROPERTIES.color)}
-                />
-            </div>
-
-            <div className="h-px bg-white/5 my-4" />
+            {selectedTrack.type !== 'image' && (
+                <>
+                    <div className="space-y-4">
+                        <ColorPicker
+                            label="Color"
+                            value={props.color}
+                            onChange={(v) => handleChange('color', v)}
+                            onReset={() => handleChange('color', DEFAULT_PROPERTIES.color)}
+                        />
+                    </div>
+                    <div className="h-px bg-white/5 my-4" />
+                </>
+            )}
 
             {/* Transform */}
             <div className="space-y-4">
@@ -84,76 +119,169 @@ export const PropertiesPanel: React.FC = () => {
                         onReset={() => handleChange('height', DEFAULT_PROPERTIES.height)}
                     />
                 </div>
+
+                {selectedTrack.type === 'image' && (
+                    <div className="space-y-3 mt-4">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={props.maintainAspectRatio ?? true}
+                                onChange={(e) => handleChange('maintainAspectRatio', e.target.checked)}
+                                className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-primary accent-primary"
+                            />
+                            <label className="text-xs text-secondary">Maintain Aspect Ratio</label>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => {
+                                    const canvas = document.querySelector('canvas');
+                                    if (!canvas) return;
+                                    const canvasRatio = canvas.width / canvas.height;
+                                    const imgRatio = props.imageRatio || 1;
+
+                                    const updates: any = { width: 100, positionX: 50 };
+                                    if (props.maintainAspectRatio) {
+                                        // h = w * canvasRatio / imgRatio
+                                        updates.height = Math.round((100 * canvasRatio / imgRatio) * 100) / 100;
+                                    }
+                                    updateTrackProperties(selectedTrack.id, updates);
+                                }}
+                                className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                                title="Fit to Width"
+                            >
+                                <ArrowLeftRight size={14} />
+                                <span>Fit Width</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const canvas = document.querySelector('canvas');
+                                    if (!canvas) return;
+                                    const canvasRatio = canvas.width / canvas.height;
+                                    const imgRatio = props.imageRatio || 1;
+
+                                    const updates: any = { height: 100, positionY: 50 };
+                                    if (props.maintainAspectRatio) {
+                                        // w = h / canvasRatio * imgRatio
+                                        updates.width = Math.round((100 / canvasRatio * imgRatio) * 100) / 100;
+                                    }
+                                    updateTrackProperties(selectedTrack.id, updates);
+                                }}
+                                className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                                title="Fit to Height"
+                            >
+                                <ArrowUpDown size={14} />
+                                <span>Fit Height</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="h-px bg-white/5 my-4" />
 
             {/* Visuals */}
-            <div className="space-y-4">
-                {selectedTrack.type === 'bar' && (
-                    <>
-                        <SliderControl
-                            label="Bar Count"
-                            value={props.barCount} min={16} max={128} step={16}
-                            onChange={(v) => handleChange('barCount', v)}
-                            onReset={() => handleChange('barCount', DEFAULT_PROPERTIES.barCount)}
-                        />
+            {selectedTrack.type !== 'image' && (
+                <>
+                    <div className="space-y-4">
+                        {selectedTrack.type === 'bar' && (
+                            <>
+                                <SliderControl
+                                    label="Bar Count"
+                                    value={props.barCount} min={16} max={128} step={16}
+                                    onChange={(v) => handleChange('barCount', v)}
+                                    onReset={() => handleChange('barCount', DEFAULT_PROPERTIES.barCount)}
+                                />
+
+                                <SliderControl
+                                    label="Bar Gap"
+                                    value={props.barGap} min={0} max={10}
+                                    onChange={(v) => handleChange('barGap', v)}
+                                    onReset={() => handleChange('barGap', DEFAULT_PROPERTIES.barGap)}
+                                />
+                            </>
+                        )}
+
+                        {selectedTrack.type === 'circle' && (
+                            <SliderControl
+                                label="Center Radius"
+                                value={props.centerRadius} min={0.1} max={0.9} step={0.05}
+                                onChange={(v) => handleChange('centerRadius', v)}
+                                onReset={() => handleChange('centerRadius', DEFAULT_PROPERTIES.centerRadius)}
+                            />
+                        )}
 
                         <SliderControl
-                            label="Bar Gap"
-                            value={props.barGap} min={0} max={10}
-                            onChange={(v) => handleChange('barGap', v)}
-                            onReset={() => handleChange('barGap', DEFAULT_PROPERTIES.barGap)}
+                            label="Sensitivity"
+                            value={props.sensitivity} min={0} max={2} step={0.1}
+                            onChange={(v) => handleChange('sensitivity', v)}
+                            onReset={() => handleChange('sensitivity', DEFAULT_PROPERTIES.sensitivity)}
                         />
-                    </>
-                )}
+                        <SliderControl
+                            label="Smoothing"
+                            value={props.smoothing} min={0.1} max={0.99} step={0.01}
+                            onChange={(v) => handleChange('smoothing', v)}
+                            onReset={() => handleChange('smoothing', DEFAULT_PROPERTIES.smoothing)}
+                        />
+                    </div>
 
-                {selectedTrack.type === 'circle' && (
-                    <SliderControl
-                        label="Center Radius"
-                        value={props.centerRadius} min={0.1} max={0.9} step={0.05}
-                        onChange={(v) => handleChange('centerRadius', v)}
-                        onReset={() => handleChange('centerRadius', DEFAULT_PROPERTIES.centerRadius)}
-                    />
-                )}
+                    <div className="h-px bg-white/5 my-4" />
 
-                <SliderControl
-                    label="Sensitivity"
-                    value={props.sensitivity} min={0} max={2} step={0.1}
-                    onChange={(v) => handleChange('sensitivity', v)}
-                    onReset={() => handleChange('sensitivity', DEFAULT_PROPERTIES.sensitivity)}
-                />
-                <SliderControl
-                    label="Smoothing"
-                    value={props.smoothing} min={0.1} max={0.99} step={0.01}
-                    onChange={(v) => handleChange('smoothing', v)}
-                    onReset={() => handleChange('smoothing', DEFAULT_PROPERTIES.smoothing)}
-                />
-            </div>
+                    {/* Audio Range */}
+                    <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">AUDIO RANGE</h3>
+                    <div className="space-y-4">
+                        <SliderControl
+                            label="Min Frequency (Hz)"
+                            value={props.minFrequency} min={0} max={5000} step={100}
+                            onChange={(v) => handleChange('minFrequency', v)}
+                            onReset={() => handleChange('minFrequency', DEFAULT_PROPERTIES.minFrequency)}
+                        />
+                        <SliderControl
+                            label="Max Frequency (Hz)"
+                            value={props.maxFrequency} min={1000} max={22000} step={500}
+                            onChange={(v) => handleChange('maxFrequency', v)}
+                            onReset={() => handleChange('maxFrequency', DEFAULT_PROPERTIES.maxFrequency)}
+                        />
+                        <SliderControl
+                            label="Max Amplitude (0-255)"
+                            value={props.maxAmplitude} min={64} max={255} step={1}
+                            onChange={(v) => handleChange('maxAmplitude', v)}
+                            onReset={() => handleChange('maxAmplitude', DEFAULT_PROPERTIES.maxAmplitude)}
+                        />
+                    </div>
+                    <div className="h-px bg-white/5 my-4" />
+                </>
+            )}
 
-            <div className="h-px bg-white/5 my-4" />
-
-            {/* Audio Range */}
-            <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">AUDIO RANGE</h3>
-            <div className="space-y-4">
-                <SliderControl
-                    label="Min Frequency (Hz)"
-                    value={props.minFrequency} min={0} max={5000} step={100}
-                    onChange={(v) => handleChange('minFrequency', v)}
-                    onReset={() => handleChange('minFrequency', DEFAULT_PROPERTIES.minFrequency)}
-                />
-                <SliderControl
-                    label="Max Frequency (Hz)"
-                    value={props.maxFrequency} min={1000} max={22000} step={500}
-                    onChange={(v) => handleChange('maxFrequency', v)}
-                    onReset={() => handleChange('maxFrequency', DEFAULT_PROPERTIES.maxFrequency)}
-                />
-                <SliderControl
-                    label="Max Amplitude (0-255)"
-                    value={props.maxAmplitude} min={64} max={255} step={1}
-                    onChange={(v) => handleChange('maxAmplitude', v)}
-                    onReset={() => handleChange('maxAmplitude', DEFAULT_PROPERTIES.maxAmplitude)}
-                />
+            {/* Layer Management */}
+            <div className="space-y-2">
+                <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">LAYER ORDER</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    <button
+                        onClick={() => useVisualizerStore.getState().reorderTrack(selectedTrack.id, 'front')}
+                        className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                    >
+                        Bring to Front
+                    </button>
+                    <button
+                        onClick={() => useVisualizerStore.getState().reorderTrack(selectedTrack.id, 'back')}
+                        className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                    >
+                        Send to Back
+                    </button>
+                    <button
+                        onClick={() => useVisualizerStore.getState().reorderTrack(selectedTrack.id, 'forward')}
+                        className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                    >
+                        Move Forward
+                    </button>
+                    <button
+                        onClick={() => useVisualizerStore.getState().reorderTrack(selectedTrack.id, 'backward')}
+                        className="px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-xs transition-colors"
+                    >
+                        Move Backward
+                    </button>
+                </div>
             </div>
 
             <div className="h-px bg-white/5 my-4" />
@@ -164,8 +292,9 @@ export const PropertiesPanel: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 p-2 rounded-md bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-400 transition-colors text-sm font-medium"
             >
                 <Trash2 size={16} />
-                Delete Effect
+                Delete {selectedTrack.type === 'image' ? 'Image' : 'Effect'}
             </button>
         </div>
     );
 };
+

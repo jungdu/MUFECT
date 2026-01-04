@@ -168,6 +168,10 @@ export const PreviewCanvas: React.FC = () => {
                 positionY: round1(startProps.y + dyPerc)
             });
         } else if (dragMode?.startsWith('resize')) {
+            const track = useVisualizerStore.getState().tracks.find(t => t.id === dragTargetId);
+            const maintainRatio = track?.properties.maintainAspectRatio;
+            const imageRatio = track?.properties.imageRatio;
+
             // Explicit Edge-based resizing for robustness
             const startLeft = startProps.x - startProps.w / 2;
             const startRight = startProps.x + startProps.w / 2;
@@ -194,18 +198,59 @@ export const PreviewCanvas: React.FC = () => {
                 newBottom += dyPerc;
             }
 
-            // Apply Constraints (Min Width/Height 5%)
-            // We only constrain the Moving Edge relative to the Fixed Edge
-            if (dragMode.includes('w')) { // West moving
-                newLeft = Math.min(newLeft, newRight - 5);
-            } else { // East moving
-                newRight = Math.max(newRight, newLeft + 5);
-            }
+            // Aspect Ratio Enforcement
+            if (maintainRatio && imageRatio && width && height) {
+                // targetRatio (in % units) = W% / H%
+                // W_px / H_px = imageRatio
+                // (W% * cw) / (H% * ch) = imageRatio
+                // W% / H% = imageRatio * (ch / cw)
+                const targetRatioPerc = imageRatio * (height / width);
 
-            if (dragMode.includes('n')) { // North moving
-                newTop = Math.min(newTop, newBottom - 5);
-            } else { // South moving
-                newBottom = Math.max(newBottom, newTop + 5);
+                // We prioritize Width driving Height for simplicity (horizontal dominance)
+                // Determine new Width first
+                let proposedW = newRight - newLeft;
+                // Clamp min width
+                if (proposedW < 5) proposedW = 5;
+
+                // Calculate required Height
+                let proposedH = proposedW / targetRatioPerc;
+
+                // Adjust vertical edges to match proposedH
+                // We must respect the Fixed Anchor
+                if (dragMode.startsWith('resize-n')) { // Top is moving, Bottom is fixed
+                    // But wait, if we are NW, Top moves. NE, Top moves.
+                    // Anchor is Bottom.
+                    newTop = newBottom - proposedH;
+                } else { // South moving, Top is fixed
+                    newBottom = newTop + proposedH;
+                }
+
+                // Recalculate Width to match exactly (in case we clamped or shifted)
+                // Actually if we just set top/bottom, newW matches proposedW.
+                // But we need to ensure correct newLeft/newRight if we are West moving?
+                // Yes, newRight/newLeft were already set by mouse. We used them to get proposedW.
+                // So Width is the master.
+
+                // Re-apply min-width safeguard to edges if needed?
+                // dragging West: newLeft = newRight - proposedW
+                if (dragMode.includes('w')) {
+                    newLeft = newRight - proposedW;
+                } else {
+                    newRight = newLeft + proposedW;
+                }
+            } else {
+                // Standard Constraints (Min Width/Height 5%)
+                if (dragMode.includes('w')) { // West moving
+                    newLeft = Math.min(newLeft, newRight - 5);
+                } else { // East moving
+                    newRight = Math.max(newRight, newLeft + 5);
+                }
+
+                if (dragMode.includes('n')) { // North moving
+                    newTop = Math.min(newTop, newBottom - 5);
+                } else { // South moving
+                    newBottom = Math.max(newBottom, newTop + 5);
+                }
             }
 
             // Recalculate Props
@@ -310,7 +355,7 @@ export const PreviewCanvas: React.FC = () => {
     }, []);
 
     return (
-        <div ref={containerRef} className="w-full h-full min-h-[400px] bg-black rounded-lg overflow-hidden shadow-2xl relative">
+        <div ref={containerRef} className="w-full h-full min-h-[400px] bg-black overflow-hidden shadow-2xl relative">
             <canvas
                 ref={canvasRef}
                 className="block" // Removed cursor-crosshair

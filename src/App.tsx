@@ -7,6 +7,7 @@ import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { Timeline } from './components/Timeline/Timeline';
 import { PreviewCanvas } from './components/Preview/PreviewCanvas';
 import { EffectSelector } from './components/Editor/EffectSelector';
+import { ImagePanel } from './components/Editor/ImagePanel';
 import { PropertiesPanel } from './components/Editor/PropertiesPanel';
 import { ResetButton } from './components/Export/ResetButton';
 import { ExportButton } from './components/Export/ExportButton';
@@ -34,6 +35,9 @@ function App() {
   if (activeTab === 'audio-effect') {
     LeftPanel = selectedTrackId ? PropertiesPanel : EffectSelector;
     panelTitle = selectedTrackId ? 'Effect Properties' : 'Add Effect';
+  } else if (activeTab === 'image') {
+    LeftPanel = selectedTrackId ? PropertiesPanel : ImagePanel;
+    panelTitle = selectedTrackId ? 'Image Properties' : 'Add Image';
   } else {
     // For unimplemented tabs, show empty state
     LeftPanel = () => (
@@ -85,7 +89,7 @@ function App() {
         {/* Workspace */}
         <div className="flex-1 p-6 pt-2 flex flex-col gap-6 overflow-hidden">
           {/* Preview Canvas Area */}
-          <div className="flex-1 min-h-0 bg-black/50 rounded-xl overflow-hidden shadow-2xl border border-white/5 relative flex flex-col">
+          <div className="flex-1 min-h-0 bg-black/50 overflow-hidden shadow-2xl border border-white/5 relative flex flex-col">
             <PreviewCanvas />
 
             {/* Overlay Uploader if no file */}
