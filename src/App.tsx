@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAudioStore } from './stores/audioStore';
 import { useVisualizerStore } from './stores/visualizerStore';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { Timeline } from './components/Timeline/Timeline';
 import { PreviewCanvas } from './components/Preview/PreviewCanvas';
@@ -11,10 +12,12 @@ import { ExportButton } from './components/Export/ExportButton';
 import { Sidebar } from './components/Layout/Sidebar';
 
 function App() {
-  const file = useAudioStore((state) => state.file);
+  const { file } = useAudioStore();
   const selectedTrackId = useVisualizerStore((state) => state.selectedTrackId);
   const selectTrack = useVisualizerStore((state) => state.selectTrack);
   const [activeTab, setActiveTab] = useState('audio-effect');
+
+  useKeyboardShortcuts();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
