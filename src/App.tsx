@@ -6,6 +6,7 @@ import { Timeline } from './components/Timeline/Timeline';
 import { PreviewCanvas } from './components/Preview/PreviewCanvas';
 import { EffectSelector } from './components/Editor/EffectSelector';
 import { PropertiesPanel } from './components/Editor/PropertiesPanel';
+import { ResetButton } from './components/Export/ResetButton';
 import { ExportButton } from './components/Export/ExportButton';
 import { Sidebar } from './components/Layout/Sidebar';
 
@@ -61,6 +62,7 @@ function App() {
         {/* Header */}
         <header className="h-12 flex items-center justify-end px-6 shrink-0">
           <div className="flex items-center gap-4">
+            <ResetButton />
             <ExportButton />
           </div>
         </header>

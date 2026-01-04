@@ -80,6 +80,7 @@ interface VisualizerState {
     removeTrack: (id: string) => void;
     selectTrack: (id: string | null) => void;
     updateTrackProperties: (id: string, props: Partial<VisualizerProperties>) => void;
+    reset: () => void;
 
     // Helper to get selected track (optional, or just use find in UI)
 }
@@ -119,4 +120,10 @@ export const useVisualizerStore = create<VisualizerState>((set) => ({
     updateTrackProperties: (id, props) => set((state) => ({
         tracks: state.tracks.map(t => t.id === id ? { ...t, properties: { ...t.properties, ...props } } : t)
     })),
+
+    reset: () => set({
+        tracks: [],
+        selectedTrackId: null,
+        backgroundColor: '#000000',
+    }),
 }));
