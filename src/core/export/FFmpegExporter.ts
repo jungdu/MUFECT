@@ -86,7 +86,11 @@ export class FFmpegExporter {
 
             const analyser = offlineCtx.createAnalyser();
             analyser.fftSize = 2048;
-            analyser.smoothingTimeConstant = visualizerState.smoothing;
+            // distinct smoothing is handled by renderer or we default it here if needed, 
+            // but renderer handles data update. 
+            // If we want to ensure it's set before any potential usage:
+            const smoothing = visualizerState.tracks.length > 0 ? visualizerState.tracks[0].properties.smoothing : 0.8;
+            analyser.smoothingTimeConstant = smoothing;
 
             source.connect(analyser);
             analyser.connect(offlineCtx.destination);
@@ -166,7 +170,14 @@ export class FFmpegExporter {
                 }
 
                 // Render Visualizer
-                this.renderer.render(ctx, width, height, analyser, visualizerState);
+                this.renderer.render(
+                    ctx,
+                    width,
+                    height,
+                    analyser,
+                    visualizerState.tracks,
+                    { backgroundColor: visualizerState.backgroundColor }
+                );
 
                 // Get Blob
                 const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
