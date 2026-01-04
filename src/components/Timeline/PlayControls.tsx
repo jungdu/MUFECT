@@ -4,13 +4,8 @@ import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 
 export const PlayControls: React.FC = () => {
-    const { isPlaying, setIsPlaying, currentTime, duration, file } = useAudioStore();
+    const { isPlaying, setIsPlaying, file } = useAudioStore();
 
-    const formatTime = (time: number) => {
-        const min = Math.floor(time / 60);
-        const sec = Math.floor(time % 60);
-        return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-    };
 
     if (!file) return null;
 
@@ -29,10 +24,6 @@ export const PlayControls: React.FC = () => {
                 <button className="text-secondary hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
                     <SkipForward size={18} />
                 </button>
-            </div>
-
-            <div className="text-sm font-mono text-secondary tabular-nums">
-                {formatTime(currentTime)} <span className="text-white/20">/</span> {formatTime(duration)}
             </div>
         </div>
     );
