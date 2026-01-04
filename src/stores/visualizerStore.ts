@@ -2,59 +2,40 @@ import { create } from 'zustand';
 
 export type VisualizerType = 'bar' | 'circle' | 'line';
 
-interface VisualizerState {
-    effectType: VisualizerType;
-
+export interface VisualizerProperties {
     color: string;
     gradientEnabled: boolean;
     gradientStartColor: string;
     gradientEndColor: string;
-    backgroundColor: string;
+    backgroundColor: string; // Global or per track? Assuming global for now per request "Black bg default", or maybe track specific? Let's keep bg global or per track. Let's make bg global for the canvas, but track props for the effect. Wait, user said "Basic value is just black background".
+    // Actually, usually BG is global. Let's keep BG in the store root or assume it's black. 
+    // The previous store had backgroundColor. I will keep it in the store but maybe not per track.
 
-    scale: number;          // 0.5 ~ 2.0
-    positionX: number;      // 0 ~ 100 (%)
-    positionY: number;      // 0 ~ 100 (%)
+    scale: number;
+    positionX: number;
+    positionY: number;
 
-    barCount: number;       // 16 ~ 128
-    barWidth: number;       // 1 ~ 20 (px or relative)
-    barGap: number;         // 0 ~ 10
+    barCount: number;
+    barWidth: number;
+    barGap: number;
 
-    sensitivity: number;    // 0 ~ 1
-    smoothing: number;      // 0 ~ 0.99
+    sensitivity: number;
+    smoothing: number;
 
-    // Audio Analysis & Range
-    minFrequency: number;   // 20 ~ 20000
-    maxFrequency: number;   // 20 ~ 20000
-    minAmplitude: number;   // 0 ~ 255
-    maxAmplitude: number;   // 0 ~ 255
-
-    setEffectType: (type: VisualizerType) => void;
-    setColor: (color: string) => void;
-    setBackgroundColor: (color: string) => void;
-    setScale: (scale: number) => void;
-    setPosition: (x: number, y: number) => void;
-    setBarCount: (count: number) => void;
-    setBarWidth: (width: number) => void;
-    setBarGap: (gap: number) => void;
-    setSensitivity: (value: number) => void;
-    setSmoothing: (value: number) => void;
-    // New Setters
-    setMinFrequency: (value: number) => void;
-    setMaxFrequency: (value: number) => void;
-    setMinAmplitude: (value: number) => void;
-    setMaxAmplitude: (value: number) => void;
+    minFrequency: number;
+    maxFrequency: number;
+    minAmplitude: number;
+    maxAmplitude: number;
 
     mirrored: boolean;
-    setMirrored: (mirrored: boolean) => void;
 }
 
-export const VISUALIZER_DEFAULTS = {
-    effectType: 'bar' as VisualizerType,
-    color: '#FF1414', // requested 255, 20, 20
+export const DEFAULT_PROPERTIES: VisualizerProperties = {
+    color: '#FF1414',
     gradientEnabled: false,
     gradientStartColor: '#3b82f6',
     gradientEndColor: '#8b5cf6',
-    backgroundColor: '#000000', // requested black
+    backgroundColor: '#000000',
 
     scale: 1.0,
     positionX: 50,
@@ -71,27 +52,67 @@ export const VISUALIZER_DEFAULTS = {
     maxFrequency: 22000,
     minAmplitude: 0,
     maxAmplitude: 255,
+
     mirrored: true,
 };
 
+export interface VisualizerTrackItem {
+    id: string;
+    type: VisualizerType;
+    name: string;
+    properties: VisualizerProperties;
+}
+
+interface VisualizerState {
+    tracks: VisualizerTrackItem[];
+    selectedTrackId: string | null;
+
+    // Global settings
+    backgroundColor: string;
+    setBackgroundColor: (color: string) => void;
+
+    // Actions
+    addTrack: (type: VisualizerType, initialProps?: Partial<VisualizerProperties>) => void;
+    removeTrack: (id: string) => void;
+    selectTrack: (id: string | null) => void;
+    updateTrackProperties: (id: string, props: Partial<VisualizerProperties>) => void;
+
+    // Helper to get selected track (optional, or just use find in UI)
+}
+
 export const useVisualizerStore = create<VisualizerState>((set) => ({
-    ...VISUALIZER_DEFAULTS,
+    tracks: [],
+    selectedTrackId: null,
+    backgroundColor: '#000000',
 
-    setEffectType: (type) => set({ effectType: type }),
-    setColor: (color) => set({ color }),
     setBackgroundColor: (color) => set({ backgroundColor: color }),
-    setScale: (scale) => set({ scale }),
-    setPosition: (x, y) => set({ positionX: x, positionY: y }),
-    setBarCount: (count) => set({ barCount: count }),
-    setBarWidth: (width) => set({ barWidth: width }),
-    setBarGap: (gap) => set({ barGap: gap }),
-    setSensitivity: (value) => set({ sensitivity: value }),
-    setSmoothing: (value) => set({ smoothing: value }),
 
-    setMinFrequency: (value) => set({ minFrequency: value }),
-    setMaxFrequency: (value) => set({ maxFrequency: value }),
-    setMinAmplitude: (value) => set({ minAmplitude: value }),
-    setMaxAmplitude: (value) => set({ maxAmplitude: value }),
+    addTrack: (type, initialProps) => set((state) => {
+        const id = crypto.randomUUID();
+        const newTrack: VisualizerTrackItem = {
+            id,
+            type,
+            name: `${type.charAt(0).toUpperCase() + type.slice(1)} Wave`,
+            properties: {
+                ...DEFAULT_PROPERTIES,
+                backgroundColor: state.backgroundColor,
+                ...initialProps
+            }
+        };
+        return {
+            tracks: [...state.tracks, newTrack],
+            selectedTrackId: id
+        };
+    }),
 
-    setMirrored: (mirrored) => set({ mirrored }),
+    removeTrack: (id) => set((state) => ({
+        tracks: state.tracks.filter(t => t.id !== id),
+        selectedTrackId: state.selectedTrackId === id ? null : state.selectedTrackId
+    })),
+
+    selectTrack: (id) => set({ selectedTrackId: id }),
+
+    updateTrackProperties: (id, props) => set((state) => ({
+        tracks: state.tracks.map(t => t.id === id ? { ...t, properties: { ...t.properties, ...props } } : t)
+    })),
 }));

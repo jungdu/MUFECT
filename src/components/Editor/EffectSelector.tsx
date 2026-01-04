@@ -2,8 +2,9 @@ import React from 'react';
 import { useVisualizerStore, type VisualizerType } from '../../stores/visualizerStore';
 import { cn } from '../../utils/cn';
 
+
 export const EffectSelector: React.FC = () => {
-    const { effectType, setEffectType, mirrored, setMirrored } = useVisualizerStore();
+    const { addTrack } = useVisualizerStore();
 
     const renderIcon = (type: VisualizerType, isMirrored: boolean) => {
         const color = "#FF1414";
@@ -92,53 +93,38 @@ export const EffectSelector: React.FC = () => {
     };
 
     const handleSelect = (type: VisualizerType, isMirrored: boolean) => {
-        setEffectType(type);
-        setMirrored(isMirrored);
+        addTrack(type, { mirrored: isMirrored });
     };
 
     const options: { id: string, type: VisualizerType, isMirrored: boolean, label: string }[] = [
         { id: 'bar-normal', type: 'bar', isMirrored: false, label: 'Bar Wave' },
-        { id: 'bar-mirrored', type: 'bar', isMirrored: true, label: 'Marrored Bar' },
+        { id: 'bar-mirrored', type: 'bar', isMirrored: true, label: 'Mirrored Bar' },
         { id: 'circle', type: 'circle', isMirrored: false, label: 'Circle Wave' },
         { id: 'line', type: 'line', isMirrored: false, label: 'Line Wave' },
     ];
 
-    const isSelected = (opt: typeof options[0]) => {
-        if (opt.type !== effectType) return false;
-        if (opt.type === 'bar') return mirrored === opt.isMirrored;
-        return true;
-    };
-
     return (
         <div className="p-4 bg-surface rounded-lg border border-white/5 space-y-4">
-            <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">EFFECT TYPE</h3>
+            <h3 className="text-xs text-secondary font-mono tracking-wider mb-2">ADD EFFECT</h3>
 
             <div className="flex flex-col gap-2">
-                {options.map((opt) => {
-                    const selected = isSelected(opt);
-                    return (
-                        <button
-                            key={opt.id}
-                            onClick={() => handleSelect(opt.type, opt.isMirrored)}
-                            className={cn(
-                                "relative group flex flex-col items-center gap-1 p-2 rounded-xl transition-all border border-transparent overflow-hidden w-full",
-                                selected
-                                    ? "bg-white/10 border-primary/50 shadow-lg shadow-black/20"
-                                    : "hover:bg-white/5 hover:border-white/10"
-                            )}
-                        >
-                            <div className="h-16 w-full bg-black/40 rounded-lg overflow-hidden flex items-center justify-center">
-                                {renderIcon(opt.type, opt.isMirrored)}
-                            </div>
-                            <span className={cn(
-                                "text-xs font-medium transition-colors",
-                                selected ? "text-primary" : "text-secondary group-hover:text-white"
-                            )}>
-                                {opt.label}
-                            </span>
-                        </button>
-                    );
-                })}
+                {options.map((opt) => (
+                    <button
+                        key={opt.id}
+                        onClick={() => handleSelect(opt.type, opt.isMirrored)}
+                        className={cn(
+                            "relative group flex flex-col items-center gap-1 p-2 rounded-xl transition-all border border-transparent overflow-hidden w-full",
+                            "hover:bg-white/5 hover:border-white/10 active:scale-95 bg-surface"
+                        )}
+                    >
+                        <div className="h-16 w-full bg-black/40 rounded-lg overflow-hidden flex items-center justify-center">
+                            {renderIcon(opt.type, opt.isMirrored)}
+                        </div>
+                        <span className="text-xs font-medium text-secondary group-hover:text-white transition-colors">
+                            {opt.label}
+                        </span>
+                    </button>
+                ))}
             </div>
         </div>
     );

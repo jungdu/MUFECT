@@ -49,7 +49,8 @@ export const PreviewCanvas: React.FC = () => {
                     canvas.width,
                     canvas.height,
                     audioState.analyser,
-                    visualizerState,
+                    visualizerState.tracks,
+                    { backgroundColor: visualizerState.backgroundColor },
                     shouldUpdateData
                 );
             }
