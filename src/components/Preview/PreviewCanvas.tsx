@@ -317,10 +317,25 @@ export const PreviewCanvas: React.FC = () => {
             const container = containerRef.current;
             if (!canvas || !container) return;
 
-            // Resize if needed
-            if (canvas.width !== container.clientWidth || canvas.height !== container.clientHeight) {
-                canvas.width = container.clientWidth;
-                canvas.height = container.clientHeight;
+            // Resize logic to enforce 16:9
+            const containerW = container.clientWidth;
+            const containerH = container.clientHeight;
+            const targetRatio = 16 / 9;
+
+            let fitW = containerW;
+            let fitH = containerW / targetRatio;
+
+            if (fitH > containerH) {
+                fitH = containerH;
+                fitW = fitH * targetRatio;
+            }
+
+            fitW = Math.floor(fitW);
+            fitH = Math.floor(fitH);
+
+            if (canvas.width !== fitW || canvas.height !== fitH) {
+                canvas.width = fitW;
+                canvas.height = fitH;
             }
 
             const ctx = canvas.getContext('2d');
@@ -355,7 +370,7 @@ export const PreviewCanvas: React.FC = () => {
     }, []);
 
     return (
-        <div ref={containerRef} className="w-full h-full min-h-[400px] bg-black overflow-hidden shadow-2xl relative">
+        <div ref={containerRef} className="w-full h-full min-h-[400px] bg-black overflow-hidden shadow-2xl relative flex items-center justify-center">
             <canvas
                 ref={canvasRef}
                 className="block" // Removed cursor-crosshair

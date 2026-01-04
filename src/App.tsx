@@ -12,6 +12,7 @@ import { PropertiesPanel } from './components/Editor/PropertiesPanel';
 import { ResetButton } from './components/Export/ResetButton';
 import { ExportButton } from './components/Export/ExportButton';
 import { Sidebar } from './components/Layout/Sidebar';
+import { AspectRatioContainer } from './components/Layout/AspectRatioContainer';
 
 function App() {
   const { file } = useAudioStore();
@@ -89,15 +90,17 @@ function App() {
         {/* Workspace */}
         <div className="flex-1 p-6 pt-2 flex flex-col gap-6 overflow-hidden">
           {/* Preview Canvas Area */}
-          <div className="flex-1 min-h-0 bg-black/50 overflow-hidden shadow-2xl border border-white/5 relative flex flex-col">
-            <PreviewCanvas />
+          <div className="flex-1 min-h-0">
+            <AspectRatioContainer className="bg-black/50 overflow-hidden shadow-2xl border border-white/5 relative flex flex-col">
+              <PreviewCanvas />
 
-            {/* Overlay Uploader if no file */}
-            {!file && (
-              <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center p-12">
-                <AudioUploader />
-              </div>
-            )}
+              {/* Overlay Uploader if no file */}
+              {!file && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center p-12">
+                  <AudioUploader />
+                </div>
+              )}
+            </AspectRatioContainer>
           </div>
 
           {/* Timeline Area - Fixed height or resizable? Fixed for now to match previous */}
