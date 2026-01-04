@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useVisualizerStore } from '../../stores/visualizerStore';
-import { Image as ImageIcon, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 
 export const ImagePanel: React.FC = () => {
     const { addTrack } = useVisualizerStore();
@@ -40,33 +40,32 @@ export const ImagePanel: React.FC = () => {
     };
 
     return (
-        <div className="p-4 bg-surface rounded-lg border border-white/5">
-            <h3 className="text-secondary text-sm font-medium mb-4 flex items-center gap-2">
-                <ImageIcon size={16} />
-                Image Panel
-            </h3>
-
-            <div className="flex flex-col gap-4">
-                <p className="text-xs text-secondary/70">
-                    Upload images to add them to the scene. Images are rendered as layers.
-                </p>
-
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
-                />
-
-                <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded border border-primary/20 transition-colors w-full"
-                >
-                    <Upload size={18} />
-                    <span className="text-sm font-medium">Upload Image</span>
-                </button>
+        <div className="h-full flex flex-col p-4">
+            <div className="mb-6">
+                <h2 className="text-lg font-bold text-white mb-1">Images</h2>
+                <p className="text-xs text-secondary/60">Upload images to add them to your scene.</p>
             </div>
+
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+            />
+
+            <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-3 px-4 py-12 border border-dashed border-white/10 rounded-xl hover:border-primary/50 hover:bg-white/5 transition-all group w-full"
+            >
+                <div className="p-3 bg-white/5 rounded-full group-hover:bg-primary/10 transition-colors">
+                    <Upload size={24} className="text-secondary group-hover:text-primary transition-colors" />
+                </div>
+                <div className="text-center">
+                    <span className="text-sm font-medium text-white block">Click to Upload</span>
+                    <span className="text-[10px] text-secondary/50">Supports PNG, JPG, GIF</span>
+                </div>
+            </button>
         </div>
     );
 };

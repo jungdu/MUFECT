@@ -49,16 +49,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
                     onClick={() => onTabChange('audio-effect')}
                 />
                 <SidebarItem
-                    icon={<Music size={20} />}
-                    label="Audio"
-                    isActive={activeTab === 'audio'}
-                    onClick={() => onTabChange('audio')}
-                />
-                <SidebarItem
                     icon={<ImageIcon size={20} />}
                     label="Image"
                     isActive={activeTab === 'image'}
                     onClick={() => onTabChange('image')}
+                />
+                <SidebarItem
+                    icon={<Music size={20} />}
+                    label="Audio"
+                    isActive={activeTab === 'audio'}
+                    onClick={() => onTabChange('audio')}
                 />
                 <SidebarItem
                     icon={<Captions size={20} />}
