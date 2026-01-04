@@ -122,7 +122,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ open, onOpenChange, ex
                                     disabled={isExporting}
                                     className="w-full bg-black/20 border border-white/10 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
                                 >
-                                    <option value="1080p">1080p (1920x1080)</option>
+                                    <option value="1080p">1080p (1920x1080) - May be Slow</option>
                                     <option value="720p">720p (1280x720)</option>
                                     <option value="480p">480p (854x480)</option>
                                     <option value="360p">360p (640x360)</option>

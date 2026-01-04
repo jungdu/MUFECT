@@ -23,7 +23,7 @@ interface ExportState {
 }
 
 export const useExportStore = create<ExportState>((set) => ({
-    resolution: '1080p',
+    resolution: '720p',
     frameRate: 30,
 
     isExporting: false,
