@@ -86,6 +86,7 @@ interface VisualizerState {
     selectTrack: (id: string | null) => void;
     updateTrackProperties: (id: string, props: Partial<VisualizerProperties>) => void;
     reorderTrack: (id: string, direction: 'front' | 'back' | 'forward' | 'backward') => void;
+    moveTrack: (fromIndex: number, toIndex: number) => void;
     reset: () => void;
 }
 
@@ -151,6 +152,13 @@ export const useVisualizerStore = create<VisualizerState>((set) => ({
             }
         }
 
+        return { tracks: newTracks };
+    }),
+
+    moveTrack: (fromIndex: number, toIndex: number) => set((state) => {
+        const newTracks = [...state.tracks];
+        const [removed] = newTracks.splice(fromIndex, 1);
+        newTracks.splice(toIndex, 0, removed);
         return { tracks: newTracks };
     }),
 
