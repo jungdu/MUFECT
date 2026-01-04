@@ -9,34 +9,30 @@ export const PlayControls: React.FC = () => {
     const formatTime = (time: number) => {
         const min = Math.floor(time / 60);
         const sec = Math.floor(time % 60);
-        return `${min}:${sec.toString().padStart(2, '0')}`;
+        return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     };
 
     if (!file) return null;
 
     return (
-        <div className="flex items-center justify-between mt-2">
-            <div className="text-sm font-mono text-secondary w-20">
-                {formatTime(currentTime)}
-            </div>
-
-            <div className="flex items-center gap-4">
-                <button className="text-secondary hover:text-white transition-colors">
-                    <SkipBack size={20} />
+        <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+                <button className="text-secondary hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <SkipBack size={18} />
                 </button>
                 <button
-                    className="bg-primary hover:bg-primary/90 text-white rounded-full p-3 transition-transform active:scale-95"
+                    className="bg-white text-black hover:bg-white/90 rounded-full p-2 transition-transform active:scale-95"
                     onClick={() => setIsPlaying(!isPlaying)}
                 >
-                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+                    {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
                 </button>
-                <button className="text-secondary hover:text-white transition-colors">
-                    <SkipForward size={20} />
+                <button className="text-secondary hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                    <SkipForward size={18} />
                 </button>
             </div>
 
-            <div className="text-sm font-mono text-secondary w-20 text-right">
-                {formatTime(duration)}
+            <div className="text-sm font-mono text-secondary tabular-nums">
+                {formatTime(currentTime)} <span className="text-white/20">/</span> {formatTime(duration)}
             </div>
         </div>
     );

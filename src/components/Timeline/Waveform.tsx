@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 import { useAudioStore } from '../../stores/audioStore';
 import { useVisualizerStore } from '../../stores/visualizerStore';
 
 export const Waveform: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const timelineRef = useRef<HTMLDivElement>(null);
     const wavesurferRef = useRef<WaveSurfer | null>(null);
     const { file, isPlaying, setIsPlaying, setDuration, setCurrentTime, setAudioData } = useAudioStore();
     const { color } = useVisualizerStore();
 
     useEffect(() => {
-        if (!containerRef.current || !file) return;
+        if (!containerRef.current || !timelineRef.current || !file) return;
 
         const ws = WaveSurfer.create({
             container: containerRef.current,
@@ -21,7 +23,17 @@ export const Waveform: React.FC = () => {
             barGap: 2,
             height: 64,
             normalize: true,
-            url: URL.createObjectURL(file), // Helper to load file
+            url: URL.createObjectURL(file),
+            plugins: [
+                TimelinePlugin.create({
+                    container: timelineRef.current,
+                    height: 20,
+                    style: {
+                        color: '#94a3b8',
+                        fontSize: '10px',
+                    },
+                }),
+            ],
         });
 
         wavesurferRef.current = ws;
@@ -55,7 +67,6 @@ export const Waveform: React.FC = () => {
                     setAudioData(decodedBuffer, ac, analyser);
                 } catch (err) {
                     console.error('Failed to decode audio data', err);
-                    // Still set context/analyser so visualization works
                     setAudioData(null, ac, analyser);
                 }
 
@@ -70,9 +81,6 @@ export const Waveform: React.FC = () => {
         ws.on('interaction', () => {
             const time = ws.getCurrentTime();
             setCurrentTime(time);
-
-            // If the user clicks to seek, we might need to sync play state
-            // but wavesurfer handles seek natively
         });
 
         ws.on('finish', () => {
@@ -102,8 +110,17 @@ export const Waveform: React.FC = () => {
         }
     }, [color]);
 
+    if (!file) {
+        return (
+            <div className="w-full h-32 flex items-center justify-center bg-black/20 rounded-lg border border-white/5 border-dashed">
+                <div className="text-sm text-secondary">+ Add media to this project</div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full">
+            <div ref={timelineRef} className="mb-1" />
             <div ref={containerRef} />
         </div>
     );
