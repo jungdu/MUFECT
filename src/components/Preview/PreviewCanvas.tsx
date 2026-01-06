@@ -199,7 +199,7 @@ export const PreviewCanvas: React.FC = () => {
             }
 
             // Aspect Ratio Enforcement
-            if (maintainRatio && imageRatio && width && height) {
+            if (track?.type === 'image' && maintainRatio && imageRatio && width && height) {
                 // targetRatio (in % units) = W% / H%
                 // W_px / H_px = imageRatio
                 // (W% * cw) / (H% * ch) = imageRatio
