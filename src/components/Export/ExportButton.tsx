@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { useAudioStore } from '../../stores/audioStore';
-import { FFmpegExporter } from '../../core/export/FFmpegExporter';
+import { WebCodecsExporter } from '../../core/export/WebCodecsExporter';
 import { ExportModal } from './ExportModal';
 
-const exporter = new FFmpegExporter();
+const exporter = new WebCodecsExporter();
 
 export const ExportButton: React.FC = () => {
     const { file } = useAudioStore();

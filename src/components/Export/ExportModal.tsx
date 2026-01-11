@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Download, Loader2, Film, AlertCircle } from 'lucide-react';
 import { useExportStore } from '../../stores/exportStore';
-import { FFmpegExporter } from '../../core/export/FFmpegExporter';
+import { WebCodecsExporter } from '../../core/export/WebCodecsExporter';
 import { useAudioStore } from '../../stores/audioStore';
 
 interface ExportModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    exporter: FFmpegExporter;
+    exporter: WebCodecsExporter;
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ open, onOpenChange, exporter }) => {
@@ -44,7 +44,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ open, onOpenChange, ex
 
         startExport();
         try {
-            await exporter.exportVideo(audioBuffer, file, w, h);
+            await exporter.exportVideo(audioBuffer, file, w, h, 60);
         } catch (e) {
             // handled
         }
@@ -92,7 +92,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ open, onOpenChange, ex
                                 <>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
                                         <h4 className="font-semibold truncate">{file?.name || 'No Audio'}</h4>
-                                        <p className="text-xs text-secondary">{duration.toFixed(1)}s • {resolution} • 30fps</p>
+                                        <p className="text-xs text-secondary">{duration.toFixed(1)}s • {resolution} • 60fps</p>
                                     </div>
 
                                     <div className="mb-4 flex flex-col items-center gap-2">

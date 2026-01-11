@@ -38,7 +38,7 @@ export class FFmpegExporter {
         audioFile: File,
         width: number = 1920,
         height: number = 1080,
-        fps: number = 30
+        fps: number = 60
     ) {
         const store = useExportStore.getState();
         const visualizerState = useVisualizerStore.getState();
@@ -130,7 +130,7 @@ export class FFmpegExporter {
                 // -framerate 30 -i frame%05d.png -i input.mp3 -c:v libx264 -pix_fmt yuv420p -c:a copy output.mp4
                 await this.ffmpeg.exec([
                     '-framerate', fps.toString(),
-                    '-i', 'frame%05d.png',
+                    '-i', 'frame%05d.jpg',
                     '-i', 'input.mp3',
                     '-c:v', 'libx264',
                     '-preset', 'ultrafast', // Speed up encoding
@@ -180,10 +180,10 @@ export class FFmpegExporter {
                 );
 
                 // Get Blob
-                const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+                const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
                 if (blob) {
                     const data = await fetchFile(blob);
-                    const filename = `frame${frameIndex.toString().padStart(5, '0')}.png`;
+                    const filename = `frame${frameIndex.toString().padStart(5, '0')}.jpg`;
                     await this.ffmpeg.writeFile(filename, data);
                     createdFiles.push(filename);
                 }
