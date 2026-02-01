@@ -22,63 +22,67 @@ export class CanvasRenderer {
         ctx.fillStyle = globalOptions.backgroundColor || '#000000';
         ctx.fillRect(0, 0, width, height);
 
-        if (analyser) {
-            // 2. Initialize data array if needed (shared for all tracks)
-            if (!this.dataArray || this.dataArray.length !== analyser.frequencyBinCount) {
-                this.dataArray = new Uint8Array(analyser.frequencyBinCount);
-            }
+        // if (analyser) { // Allow rendering without analyser (for images/placeholders)
+        // 2. Initialize data array if needed (shared for all tracks)
+        if (analyser && (!this.dataArray || this.dataArray.length !== analyser.frequencyBinCount)) {
+            this.dataArray = new Uint8Array(analyser.frequencyBinCount);
+        }
 
-            // 3. Fetch new data only if playing (shouldUpdateData) (Once per frame)
-            if (shouldUpdateData) {
-                // Use a default smoothing or max from tracks? 
-                // Creating a simplified approach: use fixed smoothing for data fetch or average?
-                // Visualizers might need different smoothing, but AnalyserNode has one property.
-                // We'll set it to a reasonable default or the value from the first track.
-                // Side effect: if tracks have different smoothing, they will fight. 
-                // User requirement: each effect has properties.
-                // Tech constraint: One AnalyserNode.
-                // Improvement: We can use separate analysers or just accept the limitation.
-                // For now: Use the first track's smoothing or default.
-                const smoothing = tracks.length > 0 ? tracks[0].properties.smoothing : 0.8;
-                analyser.smoothingTimeConstant = smoothing || 0.8;
-                analyser.getByteFrequencyData(this.dataArray as any);
-            }
+        // 3. Fetch new data only if playing (shouldUpdateData) (Once per frame)
+        if (analyser && shouldUpdateData) {
+            // Use a default smoothing or max from tracks? 
+            // Creating a simplified approach: use fixed smoothing for data fetch or average?
+            // Visualizers might need different smoothing, but AnalyserNode has one property.
+            // We'll set it to a reasonable default or the value from the first track.
+            // Side effect: if tracks have different smoothing, they will fight. 
+            // User requirement: each effect has properties.
+            // Tech constraint: One AnalyserNode.
+            // Improvement: We can use separate analysers or just accept the limitation.
+            // For now: Use the first track's smoothing or default.
+            const smoothing = tracks.length > 0 ? tracks[0].properties.smoothing : 0.8;
+            analyser.smoothingTimeConstant = smoothing || 0.8;
+            analyser.getByteFrequencyData(this.dataArray as any);
+        }
 
-            // 4. Draw each track
-            // 4. Draw each track
-            tracks.forEach(track => {
-                const visualizer = getVisualizer(track.type);
-                if (visualizer) {
-                    const { positionX, positionY, width: wPerc, height: hPerc } = track.properties;
+        // 4. Draw each track
+        // 4. Draw each track
+        // 4. Draw each track
+        tracks.forEach(track => {
+            const visualizer = getVisualizer(track.type);
+            if (visualizer) {
+                const { positionX, positionY, width: wPerc, height: hPerc } = track.properties;
 
-                    // Convert % to pixels
-                    const w = width * (wPerc / 100);
-                    const h = height * (hPerc / 100);
-                    const x = (width * (positionX / 100)) - (w / 2);
-                    const y = (height * (positionY / 100)) - (h / 2);
+                // Convert % to pixels
+                const w = width * (wPerc / 100);
+                const h = height * (hPerc / 100);
+                const x = (width * (positionX / 100)) - (w / 2);
+                const y = (height * (positionY / 100)) - (h / 2);
 
-                    ctx.save();
+                ctx.save();
 
-                    // Clip to bounding box
-                    ctx.beginPath();
-                    ctx.rect(x, y, w, h);
-                    ctx.clip();
+                // Clip to bounding box
+                ctx.beginPath();
+                ctx.rect(x, y, w, h);
+                ctx.clip();
 
-                    // Translate to CENTER of the bounding box
-                    ctx.translate(x + w / 2, y + h / 2);
+                // Translate to CENTER of the bounding box
+                ctx.translate(x + w / 2, y + h / 2);
 
+                try {
                     visualizer.draw({
                         ctx,
                         width: w,
                         height: h,
-                        analyser,
+                        analyser: analyser || null, // Pass null if missing
                         dataArray: this.dataArray,
                         options: track.properties
                     });
-
-                    ctx.restore();
+                } catch (err) {
+                    console.error(`Failed to draw track ${track.id} (${track.type}):`, err);
                 }
-            });
-        }
+
+                ctx.restore();
+            }
+        });
     }
 }

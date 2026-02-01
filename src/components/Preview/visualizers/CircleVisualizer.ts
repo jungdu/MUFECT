@@ -1,7 +1,8 @@
 import type { IVisualizer, DrawContext } from './types';
 
 export class CircleVisualizer implements IVisualizer {
-    draw({ ctx, width, height, dataArray, options }: DrawContext) {
+    draw({ ctx, width, height, dataArray, options, analyser }: DrawContext) {
+        if (!analyser) return;
         const {
             color,
             barCount,

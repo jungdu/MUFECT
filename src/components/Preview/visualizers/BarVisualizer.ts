@@ -2,6 +2,8 @@ import type { IVisualizer, DrawContext } from './types';
 
 export class BarVisualizer implements IVisualizer {
     draw({ ctx, width, height, analyser, dataArray, options }: DrawContext) {
+        if (!analyser) return;
+
         const {
             color,
 

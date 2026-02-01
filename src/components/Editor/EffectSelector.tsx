@@ -1,6 +1,7 @@
 import React from 'react';
 import { useVisualizerStore, type VisualizerType } from '../../stores/visualizerStore';
 import { cn } from '../../utils/cn';
+import { Layers } from 'lucide-react';
 
 
 export const EffectSelector: React.FC = () => {
@@ -89,6 +90,12 @@ export const EffectSelector: React.FC = () => {
                         <path d="M20 20 Q 50 5, 80 20 T 140 20 T 200 20" />
                     </svg>
                 );
+            case 'beat-image':
+                return (
+                    <div className="w-full h-full flex items-center justify-center opacity-80">
+                        <Layers size={24} color={color} />
+                    </div>
+                );
         }
     };
 
@@ -101,6 +108,7 @@ export const EffectSelector: React.FC = () => {
         { id: 'bar-mirrored', type: 'bar', isMirrored: true, label: 'Mirrored Bar' },
         { id: 'circle', type: 'circle', isMirrored: false, label: 'Circle Wave' },
         { id: 'line', type: 'line', isMirrored: false, label: 'Line Wave' },
+        { id: 'beat-image', type: 'beat-image', isMirrored: false, label: 'Beat Image' },
     ];
 
     return (

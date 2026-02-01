@@ -2,7 +2,7 @@ export interface DrawContext {
     ctx: CanvasRenderingContext2D;
     width: number;
     height: number;
-    analyser: AnalyserNode;
+    analyser: AnalyserNode | null;
     dataArray: any;
     options: any; // visualizerStore state
 }

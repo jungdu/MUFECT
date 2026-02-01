@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type VisualizerType = 'bar' | 'circle' | 'line' | 'image';
+export type VisualizerType = 'bar' | 'circle' | 'line' | 'image' | 'beat-image';
 
 export interface VisualizerProperties {
     color: string;
@@ -34,6 +34,10 @@ export interface VisualizerProperties {
     imageUrl?: string;
     maintainAspectRatio?: boolean;
     imageRatio?: number; // width / height
+
+    // Beat Image Props
+    lowImageUrl?: string;
+    highImageUrl?: string;
 }
 
 export const DEFAULT_PROPERTIES: VisualizerProperties = {
@@ -104,7 +108,7 @@ export const useVisualizerStore = create<VisualizerState>((set) => ({
         const newTrack: VisualizerTrackItem = {
             id,
             type,
-            name: name || (type === 'image' ? 'Image Layer' : `${type.charAt(0).toUpperCase() + type.slice(1)} Wave`),
+            name: name || (type === 'image' ? 'Image Layer' : type === 'beat-image' ? 'Beat Image' : `${type.charAt(0).toUpperCase() + type.slice(1)} Wave`),
             properties: {
                 ...DEFAULT_PROPERTIES,
                 backgroundColor: state.backgroundColor,
