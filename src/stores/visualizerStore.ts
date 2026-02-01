@@ -28,6 +28,7 @@ export interface VisualizerProperties {
     centerRadius: number;
 
     mirrored: boolean;
+    flip?: boolean;
 
     // Image Props
     imageUrl?: string;
@@ -60,6 +61,7 @@ export const DEFAULT_PROPERTIES: VisualizerProperties = {
     maxAmplitude: 255,
 
     mirrored: true,
+    flip: false,
 
     maintainAspectRatio: true,
     imageRatio: 1,

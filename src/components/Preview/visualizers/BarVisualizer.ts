@@ -36,6 +36,10 @@ export class BarVisualizer implements IVisualizer {
 
         ctx.save();
 
+        if (options.flip) {
+            ctx.scale(-1, 1);
+        }
+
 
         // Calculate bar width based on total width and count
         const totalGap = Math.max(0, (barCount - 1) * barGap);

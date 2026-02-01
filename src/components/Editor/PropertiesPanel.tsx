@@ -180,6 +180,23 @@ export const PropertiesPanel: React.FC = () => {
 
             <div className="h-px bg-white/5 my-4" />
 
+            <div className="h-px bg-white/5 my-4" />
+
+            {/* Common Options */}
+            {selectedTrack.type !== 'image' && (
+                <>
+                    <div className="flex items-center gap-2 mb-4">
+                        <input
+                            type="checkbox"
+                            checked={props.flip ?? false}
+                            onChange={(e) => handleChange('flip', e.target.checked)}
+                            className="w-4 h-4 rounded border-white/10 bg-white/5 checked:bg-primary accent-primary"
+                        />
+                        <label className="text-xs text-secondary">Horizontal Flip (Mirror L/R)</label>
+                    </div>
+                </>
+            )}
+
             {/* Visuals */}
             {selectedTrack.type !== 'image' && (
                 <>

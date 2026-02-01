@@ -11,6 +11,9 @@ export class LineVisualizer implements IVisualizer {
         // ...
 
         // Actually let's just center a fixed width line
+        if (options.flip) {
+            ctx.scale(-1, 1);
+        }
         const drawingWidth = width * 0.9; // Use 90% of box width
         const startX = -drawingWidth / 2;
 
